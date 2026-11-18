@@ -85,6 +85,9 @@
   .dot { width: 12px; height: 12px; vertical-align: middle; }
   a { color: var(--blue); }
   .small { font-size: .85rem; }
+  tr.work td, .phrase.work { background: #e8f1fb; }
+  @media (prefers-color-scheme: dark) { tr.work td, .phrase.work { background: #1f2c3d; } }
+  .lesson-row.pro { border-left: 4px solid var(--blue); }
   .big-btn { font-size: 1.15rem; padding: 14px 28px; }
   .actions.left { justify-content: flex-start; margin: 0 0 10px; }
   .science li { margin: .45em 0; }
@@ -119,6 +122,7 @@
 </nav>
 <main id="main"></main>
 <script src="lessons.js"></script>
+<script src="lessons-work.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

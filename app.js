@@ -36,7 +36,7 @@ const fmtIvl = d => d === 1 ? 'domani' : d < 31 ? `${d} gg` : d < 365 ? `${Math.
 
 // ---------- Stato ----------
 const defaultState = () => ({
-  rhythm: 2, startDate: today(), unlockAll: false,
+  rhythm: 2, focus: 'work', startDate: today(), unlockAll: false,
   lessons: {},   // id -> {best, done, date, attempts}
   cards: {},     // chiave -> {type:'v'|'p'|'x', es, it, lesson, idx, S, D, due, last, reps, lapses}
   activity: {},  // 'YYYY-MM-DD' -> {lessons, reviews}
@@ -221,9 +221,35 @@ function renderExercise(el, e, onResult) {
 }
 
 // ---------- Logica del corso ----------
-const completedCount = () => LESSONS.filter(l => state.lessons[l.id]?.done).length;
-const nextLesson = () => LESSONS.find(l => !state.lessons[l.id]?.done);
-const isUnlocked = l => state.unlockAll || l.id === 1 || state.lessons[l.id - 1]?.done || state.lessons[l.id]?.done;
+// ---------- Percorso: lezioni generali + contenuti e lezioni professionali (💼) ----------
+const WORK_ON = () => state.focus !== 'life';
+// Lezione completa: alla lezione generale si aggiungono parole, frasi ed esercizi di lavoro.
+// (Per il ripasso si usa sempre la versione completa, così gli indici degli esercizi restano stabili.)
+function getLesson(id, full) {
+  id = +id;
+  const base = LESSONS.find(l => l.id === id) || PRO_LESSONS.find(l => l.id === id);
+  if (!base) return null;
+  const w = WORK[id];
+  if (!w || !(full || WORK_ON())) return base;
+  return Object.assign({}, base, {
+    vocab: [...base.vocab, ...w.vocab.map(v => [v[0], v[1], 'w'])],
+    phrases: [...base.phrases, ...w.phrases.map(v => [v[0], v[1], 'w'])],
+    exercises: [...base.exercises, ...w.exercises.map(x => Object.assign({ work: true }, x))]
+  });
+}
+// Ordine del percorso: le lezioni professionali arrivano subito dopo la lezione che ne fornisce la grammatica.
+function course() {
+  return LESSONS.flatMap(l => [l, ...(WORK_ON() ? PRO_LESSONS.filter(p => p.after === l.id) : [])]);
+}
+const label = l => l.id > 100 ? 'P' + (l.id - 100) : String(l.id);
+const lessonName = id => { const l = getLesson(id); return l ? (l.id > 100 ? 'lezione ' : 'lezione ') + label(l) : 'lezione ' + id; };
+const completedCount = () => course().filter(l => state.lessons[l.id]?.done).length;
+const nextLesson = () => course().find(l => !state.lessons[l.id]?.done);
+function isUnlocked(l) {
+  if (state.unlockAll || state.lessons[l.id]?.done) return true;
+  const c = course(), i = c.findIndex(x => x.id === l.id);
+  return i === 0 || (i > 0 && !!state.lessons[c[i - 1].id]?.done);
+}
 const dueCards = () => Object.entries(state.cards).filter(([, c]) => c.due <= today()).sort((a, b) => a[1].due < b[1].due ? -1 : 1);
 const lessonsToday = () => state.activity[today()]?.lessons || 0;
 
@@ -239,7 +265,7 @@ function streak() {
 }
 function weekStart(iso = today()) { const d = new Date(iso + 'T12:00:00'); return addDays(iso, -((d.getDay() + 6) % 7)); }
 function lessonsThisWeek() { const ws = weekStart(); let n = 0; for (let i = 0; i < 7; i++) n += state.activity[addDays(ws, i)]?.lessons || 0; return n; }
-function estimatedEnd() { const left = LESSONS.length - completedCount(); return left ? addDays(today(), Math.ceil(left / state.rhythm * 7)) : null; }
+function estimatedEnd() { const left = course().length - completedCount(); return left ? addDays(today(), Math.ceil(left / state.rhythm * 7)) : null; }
 // stima della memoria: probabilità media di ricordare oggi gli elementi studiati
 function memoryHealth() {
   const cs = Object.values(state.cards).filter(c => c.reps);
@@ -275,7 +301,7 @@ function startToday() {
 }
 
 function renderHome() {
-  const done = completedCount(), total = LESSONS.length, nl = nextLesson();
+  const done = completedCount(), total = course().length, nl = nextLesson();
   const wk = lessonsThisWeek(), goal = state.rhythm, due = dueCards().length, end = estimatedEnd();
   const mh = memoryHealth(), lt = lessonsToday();
   let advice;
@@ -300,11 +326,19 @@ function renderHome() {
       <div class="actions">
         <button class="primary big-btn" data-go="today">▶ Sessione di oggi</button>
       </div>
-      <p class="muted center small">${due ? `Ripasso (${Math.min(due, SESSION_MAX)} elementi) ` : ''}${due && nl ? '→ ' : ''}${nl ? `Lezione ${nl.id}: ${esc(nl.title)}` : ''}</p>
+      <p class="muted center small">${due ? `Ripasso (${Math.min(due, SESSION_MAX)} elementi) ` : ''}${due && nl ? '→ ' : ''}${nl ? `Lezione ${label(nl)}: ${esc(nl.title)}` : ''}</p>
       <div class="actions">
         ${nl ? `<button data-go="lesson" data-id="${nl.id}">Solo lezione</button>` : ''}
         <button data-go="review">Solo ripasso (${due})</button>
       </div>
+    </section>
+    <section class="card">
+      <h3>🎯 Il tuo obiettivo</h3>
+      <div class="rhythms">
+        <button class="${WORK_ON() ? 'sel' : ''}" data-focus="work">💼 Lavoro + vita quotidiana</button>
+        <button class="${WORK_ON() ? '' : 'sel'}" data-focus="life">🌍 Solo vita quotidiana</button>
+      </div>
+      <p class="muted">${WORK_ON() ? `Ogni lezione include parole, frasi ed esercizi 💼 di <b>consulenza ambientale e carbon farming</b> (aziende agricole, zootecnia, boschi, crediti di carbonio, clienti, report), e il percorso comprende ${PRO_LESSONS.length} lezioni professionali dedicate (P1-P${PRO_LESSONS.length}).` : 'Solo le lezioni di spagnolo per la vita quotidiana, i viaggi e le relazioni.'}</p>
     </section>
     <section class="card">
       <h3>Il tuo ritmo</h3>
@@ -329,12 +363,12 @@ function renderLessonList() {
   let lvl = '';
   $('#main').innerHTML = `<section class="card">
     <label class="toggle"><input type="checkbox" id="unlockAll" ${state.unlockAll ? 'checked' : ''}> Sblocca tutte le lezioni (se conosci già un po' di spagnolo)</label>
-  </section>` + LESSONS.map(l => {
+  </section>` + course().map(l => {
     const s = state.lessons[l.id], open = isUnlocked(l);
     let head = '';
-    if (l.level !== lvl) { lvl = l.level; head = `<h2 class="level">Livello ${lvl}</h2>`; }
-    return head + `<div class="lesson-row ${open ? '' : 'locked'}" ${open ? `data-go="lesson" data-id="${l.id}"` : ''}>
-      <span class="num">${s?.done ? '✅' : open ? l.id : '🔒'}</span>
+    if (l.level !== 'PRO' && l.level !== lvl) { lvl = l.level; head = `<h2 class="level">Livello ${lvl}</h2>`; }
+    return head + `<div class="lesson-row ${open ? '' : 'locked'} ${l.level === 'PRO' ? 'pro' : ''}" ${open ? `data-go="lesson" data-id="${l.id}"` : ''}>
+      <span class="num">${s?.done ? '✅' : open ? label(l) : '🔒'}</span>
       <div><b>${esc(l.title)}</b><br><small class="muted">${esc(l.goal)}</small></div>
       <span class="score">${s ? Math.round(s.best * 100) + '%' : ''}</span>
     </div>`;
@@ -350,28 +384,28 @@ let L = null;
 const STEPS = ['Indovina', 'Grammatica', 'Ascolta e ripeti', 'Esercizi', 'Frasi tue', 'Risultato'];
 
 function renderLesson(id) {
-  const lesson = LESSONS.find(l => l.id === +id);
+  const lesson = getLesson(id);
   if (!lesson || !isUnlocked(lesson)) return render('lessons');
   L = { lesson, step: 0, ex: buildExercises(lesson), i: 0, first: 0, firstOk: 0, mistakes: [], revealed: 0 };
   showStep();
 }
 
 function buildExercises(lesson) {
-  const pool = LESSONS.flatMap(l => l.vocab);
+  const pool = [...LESSONS, ...PRO_LESSONS].flatMap(l => getLesson(l.id, true).vocab);
   const vocab = shuffle(lesson.vocab), phrases = shuffle(lesson.phrases);
   const out = [];
-  vocab.slice(0, 4).forEach(([es, it]) => {
+  vocab.slice(0, 4).forEach(([es, it, w]) => {
     const wrong = shuffle(pool.filter(v => v[0] !== es)).slice(0, 3).map(v => v[0]);
     const o = shuffle([es, ...wrong]);
-    out.push({ t: 'mc', q: `Come si dice "<b>${esc(it)}</b>"?`, o, a: o.indexOf(es), say: true });
+    out.push({ t: 'mc', q: `Come si dice "<b>${esc(it)}</b>"?`, o, a: o.indexOf(es), say: true, work: !!w });
   });
-  vocab.slice(4, 7).forEach(([es, it]) => out.push({ t: 'tr', q: esc(it), a: variants(es) }));
-  phrases.slice(0, 2).forEach(([es]) => out.push({ t: 'dict', a: [es] }));
-  phrases.slice(2, 4).forEach(([es, it]) => out.push({ t: 'say', q: it, a: [es] }));
+  vocab.slice(4, 8).forEach(([es, it, w]) => out.push({ t: 'tr', q: esc(it), a: variants(es), work: !!w }));
+  phrases.slice(0, 2).forEach(([es, , w]) => out.push({ t: 'dict', a: [es], work: !!w }));
+  phrases.slice(2, 4).forEach(([es, it, w]) => out.push({ t: 'say', q: it, a: [es], work: !!w }));
   lesson.exercises.forEach(x => out.push(x));
   // pratica intercalata: 3 esercizi da lezioni già superate
-  const old = LESSONS.filter(l => l.id !== lesson.id && state.lessons[l.id]?.done)
-    .flatMap(l => l.exercises.map(x => Object.assign({}, x, { from: l.id })));
+  const old = course().filter(l => l.id !== lesson.id && state.lessons[l.id]?.done)
+    .flatMap(l => getLesson(l.id).exercises.map(x => Object.assign({}, x, { from: label(l) })));
   shuffle(old).slice(0, 3).forEach(x => out.push(x));
   // ordine mescolato, ma si parte con una domanda facile
   const s = shuffle(out), k = s.findIndex(x => x.t === 'mc' && !x.from);
@@ -383,15 +417,15 @@ function stepper() { return `<div class="stepper">${STEPS.map((s, i) => `<span c
 
 function showStep() {
   const l = L.lesson; keyHandler = null;
-  const header = `<p class="muted"><a href="#" data-go="lessons">← Lezioni</a> · Livello ${l.level}</p>
-    <h2>Lezione ${l.id}: ${esc(l.title)}</h2>${stepper()}`;
+  const header = `<p class="muted"><a href="#" data-go="lessons">← Lezioni</a> · ${l.level === 'PRO' ? '💼 Percorso professionale' : 'Livello ' + l.level}</p>
+    <h2>Lezione ${label(l)}: ${esc(l.title)}</h2>${stepper()}`;
   const next = (label = 'Avanti →') => `<div class="actions"><button class="primary" id="next">${label}</button></div>`;
   let body = '';
   if (L.step === 0) {
     body = `<section class="card"><p>🎯 <b>Obiettivo:</b> ${esc(l.goal)}</p>
       <p class="tip">🧠 <b>Prova a indovinare</b> la parola spagnola prima di toccarla: lo spagnolo somiglia molto all'italiano!
       Anche se sbagli, lo sforzo di indovinare aiuta a ricordare. Poi <b>ripeti ad alta voce</b>.</p>
-      <table class="vocab">${l.vocab.map(([es, it], k) => `<tr><td>${esc(it)}</td>
+      <table class="vocab">${l.vocab.map(([es, it, w], k) => `<tr class="${w ? 'work' : ''}"><td>${w ? '💼 ' : ''}${esc(it)}</td>
         <td><button class="hidden-word" data-k="${k}">❓ tocca per vedere</button></td></tr>`).join('')}</table>
       <div class="actions"><button id="showAll">Mostra tutte</button><button id="sayAll">🔊 Ascolta tutte</button></div>
       ${next()}</section>`;
@@ -400,15 +434,15 @@ function showStep() {
       <p class="tip">🧠 Non rileggere più volte: leggi una volta con attenzione, poi saranno gli esercizi a fissare le regole.</p>${next()}</section>`;
   } else if (L.step === 2) {
     body = `<section class="card"><p class="muted">Per ogni frase: <b>prova a dirla</b> guardando l'italiano, poi ascoltala (prima lenta, poi normale) e <b>ripetila ad alta voce</b> imitando l'intonazione (<i>shadowing</i>).</p>
-      ${l.phrases.map(([es, it]) => `<div class="phrase"><span class="muted">${esc(it)}</span><br>
+      ${l.phrases.map(([es, it, w]) => `<div class="phrase ${w ? 'work' : ''}"><span class="muted">${w ? '💼 ' : ''}${esc(it)}</span><br>
         <button class="shadow" data-es="${esc(es)}">🔁 Ascolta e ripeti</button> <b class="blur" tabindex="0">${esc(es)}</b></div>`).join('')}
       <p class="tip">💡 ${esc(l.tip)}</p>${next('Inizia gli esercizi →')}</section>`;
   } else if (L.step === 3) {
     return showExercise(header);
   } else if (L.step === 4) {
-    body = `<section class="card"><p>✍️ Scrivi <b>1-3 frasi vere su di te</b> in spagnolo usando ciò che hai imparato oggi.</p>
+    body = `<section class="card"><p>✍️ Scrivi <b>1-3 frasi vere su di te</b> in spagnolo usando ciò che hai imparato oggi${WORK_ON() ? ': almeno una sulla tua <b>vita</b> e una sul tuo <b>lavoro</b> (clienti, aziende agricole, progetti)' : ''}.</p>
       <p class="muted">Obiettivo della lezione: ${esc(l.goal)}<br>Le informazioni collegate a noi stessi si ricordano molto meglio. Non preoccuparti degli errori: se fai lezione con un tutor, mostragli il tuo diario.</p>
-      <textarea id="diary" rows="4" placeholder="Es.: Me llamo… Vivo en… Me gusta…"></textarea>
+      <textarea id="diary" rows="4" placeholder="${WORK_ON() ? 'Es.: Vivo en… Me gusta… / Trabajo con explotaciones agrarias y calculo…' : 'Es.: Me llamo… Vivo en… Me gusta…'}"></textarea>
       <div class="actions"><button id="skip">Salta</button><button class="primary" id="saveD">Salva e continua →</button></div></section>`;
   } else {
     return showResult(header);
@@ -440,7 +474,7 @@ function showExercise(header) {
   const e = L.ex[L.i], n = L.ex.length;
   $('#main').innerHTML = header + `<section class="card">
     <div class="bar small"><div style="width:${L.i / n * 100}%"></div></div>
-    <p class="muted">Esercizio ${L.i + 1} di ${n}${e.retry ? ' · <b>🔄 riprova</b>' : ''}${e.from ? ` · <b>ripasso lezione ${e.from}</b>` : ''}</p>
+    <p class="muted">Esercizio ${L.i + 1} di ${n}${e.retry ? ' · <b>🔄 riprova</b>' : ''}${e.from ? ` · <b>ripasso lezione ${e.from}</b>` : ''}${e.work ? ' · 💼 lavoro' : ''}</p>
     <div id="ex"></div></section>`;
   renderExercise($('#ex'), e, (result, actions) => {
     if (!e.retry && result !== 'skip') { L.first++; if (result !== 'wrong') L.firstOk++; }
@@ -488,7 +522,7 @@ function renderReview(opts = {}) {
     $('#main').innerHTML = `<section class="card center"><h2>🔁 Ripasso</h2>
       <p>${total ? 'Nessun elemento da ripassare oggi. ¡Genial! Ripassare prima del necessario rende poco: meglio una lezione nuova.' : 'Completa la prima lezione per iniziare a ripassare.'}</p>
       <div class="actions">
-        ${nl ? `<button class="primary" data-go="lesson" data-id="${nl.id}">Lezione ${nl.id} →</button>` : ''}
+        ${nl ? `<button class="primary" data-go="lesson" data-id="${nl.id}">Lezione ${label(nl)} →</button>` : ''}
         ${total ? `<button data-practice="1">Esercitati comunque (20 a caso)</button>` : ''}
         <button data-go="home">🏠 Home</button></div></section>`;
     return;
@@ -500,7 +534,7 @@ function renderReview(opts = {}) {
 
 function cardToExercise(key, c) {
   if (c.type === 'x') {
-    const ex = LESSONS.find(l => l.id === c.lesson)?.exercises[c.idx];
+    const ex = getLesson(c.lesson, true)?.exercises[c.idx];
     if (ex) return ex;
   }
   if (c.type === 'p') {
@@ -518,7 +552,7 @@ function showCard() {
   const kind = { v: 'Parola', p: 'Frase', x: 'Grammatica' }[c.type];
   $('#main').innerHTML = `<section class="card review">
     <div class="bar small"><div style="width:${R.i / R.queue.length * 100}%"></div></div>
-    <p class="muted">${R.i + 1} di ${R.queue.length} · ${kind} · Lezione ${c.lesson}${relearn ? ' · <b>🔄 di nuovo</b>' : ''}${c.reps ? ` · memoria ${Math.round(recall(Math.max(0, daysBetween(c.last, today())), c.S) * 100)}%` : ''}</p>
+    <p class="muted">${R.i + 1} di ${R.queue.length} · ${kind} · ${lessonName(c.lesson)}${relearn ? ' · <b>🔄 di nuovo</b>' : ''}${c.reps ? ` · memoria ${Math.round(recall(Math.max(0, daysBetween(c.last, today())), c.S) * 100)}%` : ''}</p>
     <div id="ex"></div></section>`;
   renderExercise($('#ex'), e, (result, actions) => {
     const suggested = result === 'wrong' ? 1 : result === 'accent' || result === 'skip' ? 2 : 3;
@@ -551,13 +585,13 @@ function reviewDone() {
     <p class="muted">Gli elementi facili torneranno tra molti giorni, quelli difficili presto. Così studi solo ciò che serve.</p>
     <div class="actions">
       ${R.more > 0 ? `<button data-go="review">Continua il ripasso (${R.more} rimasti)</button>` : ''}
-      ${nl ? `<button class="primary" data-go="lesson" data-id="${nl.id}">${R.thenLesson ? 'Ora la lezione' : 'Lezione'} ${nl.id} →</button>` : ''}
+      ${nl ? `<button class="primary" data-go="lesson" data-id="${nl.id}">${R.thenLesson ? 'Ora la lezione' : 'Lezione'} ${label(nl)} →</button>` : ''}
       <button data-go="home">🏠 Home</button></div></section>`;
 }
 
 // ---------- Piano, diario e backup ----------
 function renderPlan() {
-  const left = LESSONS.length - completedCount();
+  const left = course().length - completedCount();
   const rows = Object.entries(RHYTHMS).map(([k, v]) =>
     `<tr class="${+k === state.rhythm ? 'sel' : ''}"><td>${v}</td><td>${Math.ceil(left / k)} settimane</td><td>${fmtDate(addDays(today(), Math.ceil(left / k * 7)))}</td></tr>`).join('');
   const ws = weekStart(); let cal = '';
@@ -574,7 +608,7 @@ function renderPlan() {
   const cards = Object.values(state.cards);
   const mature = cards.filter(c => c.S >= 21).length;
   $('#main').innerHTML = `<section class="card"><h3>📅 Quanto ti manca</h3>
-    <p>Lezioni rimanenti: <b>${left}</b> su ${LESSONS.length}.</p>
+    <p>Lezioni rimanenti: <b>${left}</b> su ${course().length}.</p>
     <table class="plan"><tr><th>Ritmo</th><th>Durata</th><th>Fine prevista</th></tr>${rows}</table>
     <p class="muted">Dopo l'A2 trovi in <code>docs/piano-di-studio.md</code> come proseguire verso il B1.</p></section>
     <section class="card"><h3>🧠 La tua memoria</h3>
@@ -585,7 +619,7 @@ function renderPlan() {
     <div class="cal">${cal}</div>
     <p class="muted"><span class="dot l"></span> lezione &nbsp; <span class="dot r"></span> solo ripasso</p></section>
     <section class="card"><h3>✍️ Il tuo diario</h3>
-    ${state.diary.length ? state.diary.map(d => `<div class="phrase"><small class="muted">${fmtDate(d.date)} · lezione ${d.lesson}</small><br>${esc(d.text).replace(/\n/g, '<br>')}</div>`).join('') : '<p class="muted">Le frasi che scrivi alla fine di ogni lezione compariranno qui. Mostrale a un tutor per farle correggere!</p>'}</section>
+    ${state.diary.length ? state.diary.map(d => `<div class="phrase"><small class="muted">${fmtDate(d.date)} · ${lessonName(d.lesson)}</small><br>${esc(d.text).replace(/\n/g, '<br>')}</div>`).join('') : '<p class="muted">Le frasi che scrivi alla fine di ogni lezione compariranno qui. Mostrale a un tutor per farle correggere!</p>'}</section>
     <section class="card"><h3>💾 Backup dei progressi</h3>
     <p class="muted">I progressi sono salvati nel browser di questo dispositivo. Esportali per non perderli o per spostarli su un altro dispositivo.</p>
     <div class="actions"><button id="exp">⬇ Esporta</button><label class="btn">⬆ Importa<input type="file" id="imp" accept=".json" hidden></label>
@@ -610,6 +644,8 @@ document.addEventListener('click', e => {
   if (g) { e.preventDefault(); render(g.dataset.go, g.dataset.id); return; }
   const r = e.target.closest('[data-rhythm]');
   if (r) { state.rhythm = +r.dataset.rhythm; save(); renderHome(); return; }
+  const f = e.target.closest('[data-focus]');
+  if (f) { state.focus = f.dataset.focus; save(); renderHome(); return; }
   if (e.target.closest('[data-practice]')) renderReview({ practice: true });
 });
 $$('nav button').forEach(b => b.onclick = () => render(b.dataset.view));
