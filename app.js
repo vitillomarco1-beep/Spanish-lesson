@@ -224,11 +224,11 @@ function renderExercise(el, e, onResult) {
   let prompt, input = '';
   const textInput = ph => `<form class="exf"><input class="ans" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="${ph}">
       <div class="accents">${['á', 'é', 'í', 'ó', 'ú', 'ñ', 'ü', '¿', '¡'].map(c => `<button type="button" class="acc">${c}</button>`).join('')}</div>
-      <button class="primary">Verifica</button></form>`;
+      <button class="primary">Verifica</button><p class="kbd-hint">⌨️ Premi Invio per verificare, poi Invio per continuare</p></form>`;
   switch (e.t) {
     case 'mc':
       prompt = e.q;
-      input = `<div class="opts">${e.o.map((o, k) => `<button class="opt" data-k="${k}"><span class="key">${k + 1}</span> ${esc(o)}</button>`).join('')}</div>`;
+      input = `<div class="opts">${e.o.map((o, k) => `<button class="opt" data-k="${k}"><span class="key">${k + 1}</span> ${esc(o)}</button>`).join('')}</div><p class="kbd-hint">⌨️ Premi ${e.o.map((_, k) => k + 1).join(', ')} per rispondere</p>`;
       break;
     case 'fill':
       prompt = `Completa: <b>${esc(e.q)}</b>${e.h ? ` <span class="muted">(${esc(e.h)})</span>` : ''}`;
@@ -408,6 +408,7 @@ document.addEventListener('keydown', ev => {
   if (keyHandler) keyHandler(ev);
 });
 let currentView = 'home';
+const setLayout = v => { $('#main').className = 'view-' + v; };
 function render(view, arg) {
   window.scrollTo(0, 0); keyHandler = null; currentView = view; dictRoute = null;
   if ('speechSynthesis' in window) speechSynthesis.cancel();
@@ -422,6 +423,7 @@ function startToday() {
 }
 
 function renderHome() {
+  setLayout('home');
   const done = completedCount(), total = course().length, nl = nextLesson();
   const wk = lessonsThisWeek(), goal = state.rhythm, due = dueCards().length, end = estimatedEnd();
   const mh = memoryHealth(), lt = lessonsToday();
@@ -481,6 +483,7 @@ function renderHome() {
 }
 
 function renderLessonList() {
+  setLayout('lessons');
   let lvl = '';
   $('#main').innerHTML = `<section class="card">
     <label class="toggle"><input type="checkbox" id="unlockAll" ${state.unlockAll ? 'checked' : ''}> Sblocca tutte le lezioni (se conosci già un po' di spagnolo)</label>
@@ -537,6 +540,7 @@ function buildExercises(lesson) {
 function stepper() { return `<div class="stepper">${STEPS.map((s, i) => `<span class="${i === L.step ? 'cur' : i < L.step ? 'past' : ''}">${s}</span>`).join('')}</div>`; }
 
 function showStep() {
+  setLayout('lesson');
   const l = L.lesson; keyHandler = null;
   const header = `<p class="muted"><a href="#" data-go="lessons">← Lezioni</a> · ${l.level === 'PRO' ? '💼 Percorso professionale' : 'Livello ' + l.level}</p>
     <h2>Lezione ${label(l)}: ${esc(l.title)}</h2>${stepper()}`;
@@ -636,6 +640,7 @@ function showResult(header) {
 // ---------- Ripasso (FSRS) ----------
 let R = null;
 function renderReview(opts = {}) {
+  setLayout('review');
   let items = dueCards();
   if (opts.practice) items = shuffle(Object.entries(state.cards)).slice(0, 20);
   if (!items.length) {
@@ -685,7 +690,7 @@ function showCard() {
     }
     const labels = ['Di nuovo', 'Difficile', 'Bene', 'Facile'];
     actions.innerHTML = `<p class="muted small" style="width:100%;text-align:center">Quanto è stato facile ricordarlo?</p>` +
-      labels.map((lb, k) => `<button class="grade g${k + 1} ${k + 1 === suggested ? 'primary' : ''}" data-g="${k + 1}">${lb}<small>${fmtIvl(previewIvl(c, k + 1))}</small></button>`).join('');
+      labels.map((lb, k) => `<button class="grade g${k + 1} ${k + 1 === suggested ? 'primary' : ''}" data-g="${k + 1}">${lb}<small>${fmtIvl(previewIvl(c, k + 1))}</small></button>`).join('') + `<p class="kbd-hint" style="width:100%">⌨️ Tasti 1-4 per valutare · Invio per il suggerito</p>`;
     actions.querySelector(`[data-g="${suggested}"]`).focus();
     const grade = g => {
       keyHandler = null;
@@ -712,6 +717,7 @@ function reviewDone() {
 
 // ---------- Piano, diario e backup ----------
 function renderPlan() {
+  setLayout('plan');
   const left = course().length - completedCount();
   const rows = Object.entries(RHYTHMS).map(([k, v]) =>
     `<tr class="${+k === state.rhythm ? 'sel' : ''}"><td>${v}</td><td>${Math.ceil(left / k)} settimane</td><td>${fmtDate(addDays(today(), Math.ceil(left / k * 7)))}</td></tr>`).join('');
