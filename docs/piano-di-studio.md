@@ -51,6 +51,9 @@ Puoi scegliere il ritmo nell'app e cambiarlo quando vuoi: puoi **sempre** fare p
 
 ## Consigli per non mollare
 
+- Usa sempre **▶ Sessione di oggi**: prima il ripasso, poi la lezione nuova (vedi [`neuroscienze-apprendimento.md`](neuroscienze-apprendimento.md)).
+- Fai al massimo **2 lezioni nuove al giorno**: il resto lo consolida il sonno.
+
 - **Meglio poco ma spesso**: 5 minuti di ripasso al giorno valgono più di 2 ore la domenica.
 - Mantieni la **serie 🔥**: anche solo il ripasso conta.
 - **Parla ad alta voce** ogni volta che vedi l'icona 🔊.

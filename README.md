@@ -15,17 +15,21 @@ I progressi restano salvati nel browser. Puoi esportarli o importarli dalla sezi
 | | |
 |---|---|
 | 📚 **31 lezioni passo dopo passo** | 19 lezioni A1 + 12 lezioni A2: vocabolario con audio, grammatica spiegata in italiano, frasi utili ed esercizi |
-| ✍️ **~400 esercizi** | Scelta multipla, completamento e traduzione, con correzione immediata (riconosce anche gli errori di accento) |
-| 🔁 **Ripasso intelligente** | Flashcard a ripetizione dilazionata: ogni parola torna al momento giusto per non dimenticarla |
-| 🔊 **Pronuncia** | Sintesi vocale in spagnolo di Spagna per ogni parola e frase |
+| ✍️ **Oltre 500 esercizi** | Scelta multipla, completamento, traduzione, dettato e pronuncia con riconoscimento vocale. Correzione immediata (riconosce anche gli errori di accento); gli errori tornano a fine lezione |
+| 🔁 **Ripasso con FSRS** | Parole, frasi e regole di grammatica tornano quando la probabilità di ricordarle scende al 90% (lo stesso algoritmo adottato da Anki) |
+| 🧠 **Metodo basato sulla scienza** | Effetto test, ripetizione dilazionata, pratica intercalata, pre-test, effetto produzione, autoriferimento, consolidamento nel sonno: vedi [`docs/neuroscienze-apprendimento.md`](docs/neuroscienze-apprendimento.md) |
+| 🔊 **Pronuncia** | Sintesi vocale in spagnolo di Spagna, ascolto lento/normale e *shadowing* |
 | 📅 **Piano flessibile** | Obiettivo settimanale, serie di giorni 🔥, data di fine prevista in base al tuo ritmo |
 | ⚠️ **Falsi amici** | Gli errori tipici degli italiani (burro, embarazada, salir, éxito…) |
 
-Una lezione si supera con almeno il 70% di risposte giuste, e così si sblocca la successiva. Se conosci già un po' di spagnolo, puoi sbloccare tutte le lezioni.
+Ogni lezione ha 6 fasi: **Indovina** (pre-test sul vocabolario) → **Grammatica** → **Ascolta e ripeti** → **Esercizi** (mescolati con domande delle lezioni precedenti) → **Frasi tue** (diario) → **Risultato**.
+Il pulsante **▶ Sessione di oggi** fa partire prima il ripasso e poi la lezione nuova.
+Una lezione si supera con almeno il 70% di risposte giuste al primo tentativo, e così si sblocca la successiva. Se conosci già un po' di spagnolo, puoi sbloccare tutte le lezioni.
 
 ## Documenti
 
 - [`docs/confronto-piattaforme.md`](docs/confronto-piattaforme.md): confronto tra Duolingo, Babbel, Busuu, italki, Preply, Dreaming Spanish, Anki e altre, con la combinazione consigliata.
+- [`docs/neuroscienze-apprendimento.md`](docs/neuroscienze-apprendimento.md): cosa dice la ricerca su come si impara, come è applicato nell'app, con bibliografia.
 - [`docs/piano-di-studio.md`](docs/piano-di-studio.md): calendario per ogni ritmo, le tappe e come proseguire verso il B1.
 
 ## Struttura
@@ -34,5 +38,5 @@ Una lezione si supera con almeno il 70% di risposte giuste, e così si sblocca l
 index.html   → interfaccia e stile
 app.js       → logica (lezioni, esercizi, ripasso, piano)
 lessons.js   → contenuti del corso (facili da modificare o ampliare)
-docs/        → confronto piattaforme e piano di studio
+docs/        → basi scientifiche, confronto piattaforme e piano di studio
 ```
