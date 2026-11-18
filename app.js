@@ -36,7 +36,7 @@ const fmtIvl = d => d === 1 ? 'domani' : d < 31 ? `${d} gg` : d < 365 ? `${Math.
 
 // ---------- Stato ----------
 const defaultState = () => ({
-  rhythm: 2, focus: 'work', startDate: today(), unlockAll: false,
+  rhythm: 2, focus: 'work', startDate: today(), unlockAll: false, updatedAt: 0,
   lessons: {},   // id -> {best, done, date, attempts}
   cards: {},     // chiave -> {type:'v'|'p'|'x', es, it, lesson, idx, S, D, due, last, reps, lapses}
   activity: {},  // 'YYYY-MM-DD' -> {lessons, reviews}
@@ -45,9 +45,12 @@ const defaultState = () => ({
 let state = load();
 
 function load() {
-  let s;
-  try { s = Object.assign(defaultState(), JSON.parse(localStorage.getItem(STORE_KEY)) || {}); }
-  catch { s = defaultState(); }
+  let raw = null;
+  try { raw = JSON.parse(localStorage.getItem(STORE_KEY)); } catch { }
+  return migrate(raw);
+}
+function migrate(raw) {
+  const s = Object.assign(defaultState(), raw || {});
   // migrazione dal vecchio sistema a "box" (versione 1)
   const old = [0, 1, 3, 7, 14, 30, 60];
   for (const [k, c] of Object.entries(s.cards)) {
@@ -58,7 +61,96 @@ function load() {
   }
   return s;
 }
-function save() { localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
+function saveLocal() { try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch { } }
+// Ogni modifica viene salvata nel browser e, se l'app è aperta come pagina pubblicata su claude.ai,
+// anche nel tuo account (così i progressi sono gli stessi su telefono e computer).
+function save() { state.updatedAt = Date.now(); saveLocal(); cloudSchedule(); }
+
+// ---------- Sincronizzazione con l'account (solo nella pagina pubblicata su claude.ai) ----------
+// I dati stanno nell'area privata dell'utente (data/users/<id>/): un documento "main" con impostazioni,
+// lezioni, attività e diario, e un documento per lezione con gli elementi del ripasso (limite 256 KB per documento).
+const cloud = { ref: null, status: 'off', synced: {}, timer: null, busy: false, again: false };
+function cloudDocs() {
+  const { cards, ...main } = state;
+  const docs = { main: { json: JSON.stringify(main) } };
+  for (const [k, c] of Object.entries(cards)) {
+    const d = 'c' + c.lesson;
+    (docs[d] = docs[d] || { cards: {} }).cards[k] = c;
+  }
+  for (const [d, v] of Object.entries(docs)) if (d !== 'main') docs[d] = { json: JSON.stringify(v.cards) };
+  return docs;
+}
+function cloudSchedule() {
+  if (!cloud.ref) return;
+  clearTimeout(cloud.timer); cloud.timer = setTimeout(cloudFlush, 1500);
+}
+async function cloudFlush() {
+  if (!cloud.ref) return;
+  if (cloud.busy) { cloud.again = true; return; }
+  cloud.busy = true;
+  try {
+    const docs = cloudDocs();
+    for (const [d, body] of Object.entries(docs)) {
+      if (cloud.synced[d] === body.json) continue;
+      await cloud.ref.doc(d).set(body); // una scrittura alla volta, solo se il documento è cambiato
+      cloud.synced[d] = body.json;
+    }
+    cloud.status = 'ok';
+  } catch (e) {
+    cloud.status = 'error';
+    if (e && e.code === 'unavailable') setTimeout(cloudSchedule, 2000 + Math.random() * 2000);
+  }
+  cloud.busy = false;
+  if (cloud.again) { cloud.again = false; cloudFlush(); }
+}
+async function cloudInit() {
+  if (!window.claude || typeof window.claude.use !== 'function') return;
+  try {
+    const [db, user] = await Promise.all([window.claude.use('db'), window.claude.use('user')]);
+    if (!db || !user) return;
+    const id = await user.id();
+    if (!id) return;
+    const col = db.collection('data/users/' + id);
+    cloud.status = 'loading';
+    const snap = await Promise.race([col.get(), new Promise((_, rej) => setTimeout(() => rej({ code: 'timeout' }), 10000))]);
+    let remote = null; const cards = {};
+    for (const d of snap.docs) {
+      const body = d.data() || {};
+      if (typeof body.json !== 'string') continue;
+      cloud.synced[d.id] = body.json;
+      if (d.id === 'main') remote = JSON.parse(body.json);
+      else Object.assign(cards, JSON.parse(body.json));
+    }
+    cloud.ref = col;
+    if (remote && (remote.updatedAt || 0) > (state.updatedAt || 0)) {
+      // i progressi salvati nell'account sono più recenti di quelli di questo dispositivo
+      remote.cards = cards;
+      state = migrate(remote); saveLocal();
+      if (['home', 'lessons', 'plan'].includes(currentView)) render(currentView);
+    } else if (state.updatedAt) {
+      cloudFlush(); // questo dispositivo ha progressi più recenti: li carica nell'account
+    }
+    cloud.status = 'ok';
+  } catch (e) {
+    cloud.status = 'error';
+  }
+  if (currentView === 'plan') render('plan');
+}
+
+// ---------- Funzioni della pagina pubblicata: dettatura e download ----------
+let DICT = null, DOWNLOADS = null, dictRoute = null;
+(async () => {
+  if (!window.claude || typeof window.claude.use !== 'function') return;
+  try {
+    DICT = await window.claude.use('dictation');
+    if (DICT) {
+      DICT.onPartial(x => dictRoute && dictRoute.partial(x.text));
+      DICT.onFinal(x => dictRoute && dictRoute.final(x.text));
+      DICT.onState(x => dictRoute && dictRoute.state(x.state, x.reason));
+    }
+  } catch { DICT = null; }
+  try { DOWNLOADS = await window.claude.use('downloads'); } catch { DOWNLOADS = null; }
+})();
 
 // ---------- Utilità ----------
 function today(d = new Date()) {
@@ -150,8 +242,8 @@ function renderExercise(el, e, onResult) {
       break;
     case 'say':
       prompt = `🎤 Dillo <b>ad alta voce</b> in spagnolo: <b>${esc(e.q)}</b>`;
-      input = `<div class="actions">${SR ? '<button class="primary mic">🎤 Parla</button>' : ''}
-        <button class="reveal">${SR ? 'Non posso parlare ora' : "L'ho detto: mostra la soluzione"}</button></div><p class="heard muted"></p>`;
+      input = `<div class="actions">${DICT || SR ? '<button class="primary mic">🎤 Parla</button>' : ''}
+        <button class="reveal">${DICT || SR ? 'Non posso parlare ora' : "L'ho detto: mostra la soluzione"}</button></div><p class="heard muted"></p>`;
       break;
   }
   el.innerHTML = `<p class="question">${prompt}</p>${input}<div class="fbx"></div>`;
@@ -177,15 +269,41 @@ function renderExercise(el, e, onResult) {
   } else if (e.t === 'say') {
     const sol = esc(e.a[0]);
     const mic = el.querySelector('.mic');
-    if (mic) mic.onclick = () => {
+    const heard = el.querySelector('.heard');
+    const judge = tr => {
+      const sc = spokenScore(e.a[0], tr);
+      heard.textContent = `Ho capito: "${tr[0]}"`;
+      el.querySelectorAll('.mic, .reveal').forEach(b => b.remove());
+      finish(sc >= 0.8 ? 'ok' : sc >= 0.5 ? 'partial' : 'wrong', sol, e.a[0]);
+    };
+    if (mic && DICT) {
+      // dettatura della pagina pubblicata: si parla, poi si preme "Ho finito"
+      let on = false, done = false, text = '';
+      const end = () => {
+        if (done) return; on = false; dictRoute = null;
+        if (!text.trim()) { mic.textContent = '🎤 Riprova'; heard.textContent = 'Non ho sentito nulla, riprova.'; return; }
+        done = true; judge([text.trim()]);
+      };
+      mic.onclick = () => {
+        if (on) { DICT.stop().then(end, end); return; }
+        on = true; text = ''; mic.textContent = '⏹ Ho finito'; heard.textContent = '🎙️ Ti ascolto…';
+        dictRoute = {
+          partial: t => { heard.textContent = '🎙️ ' + (text + ' ' + t).trim(); },
+          final: t => { text += ' ' + t; heard.textContent = '🎙️ ' + text.trim(); },
+          state: st => { if (st === 'idle' && on) end(); }
+        };
+        DICT.start().catch(err => {
+          on = false; dictRoute = null; mic.textContent = '🎤 Parla';
+          heard.textContent = err && err.code === 'not_granted' ? 'Microfono non autorizzato: usa "Non posso parlare ora".' : 'Microfono non disponibile, riprova o usa "Non posso parlare ora".';
+          if (err && err.code === 'not_granted') mic.remove();
+        });
+      };
+    } else if (mic) mic.onclick = () => {
       mic.disabled = true; mic.textContent = '🎙️ Ti ascolto…';
       listen((err, tr) => {
         mic.disabled = false; mic.textContent = '🎤 Riprova';
         if (err) { el.querySelector('.heard').textContent = err === 'no-speech' ? 'Non ho sentito nulla, riprova.' : 'Microfono non disponibile: usa "mostra la soluzione".'; return; }
-        const sc = spokenScore(e.a[0], tr);
-        el.querySelector('.heard').textContent = `Ho capito: "${tr[0]}"`;
-        el.querySelectorAll('.mic, .reveal').forEach(b => b.remove());
-        finish(sc >= 0.8 ? 'ok' : sc >= 0.5 ? 'partial' : 'wrong', sol, e.a[0]);
+        judge(tr);
       });
     };
     el.querySelector('.reveal').onclick = () => {
@@ -289,8 +407,9 @@ document.addEventListener('keydown', ev => {
   if (ev.target.tagName === 'INPUT' || ev.target.tagName === 'TEXTAREA') return;
   if (keyHandler) keyHandler(ev);
 });
+let currentView = 'home';
 function render(view, arg) {
-  window.scrollTo(0, 0); keyHandler = null;
+  window.scrollTo(0, 0); keyHandler = null; currentView = view; dictRoute = null;
   if ('speechSynthesis' in window) speechSynthesis.cancel();
   $$('nav button').forEach(b => b.classList.toggle('active', b.dataset.view === view));
   ({ home: renderHome, lessons: renderLessonList, lesson: renderLesson, review: renderReview, plan: renderPlan, today: startToday })[view](arg);
@@ -357,7 +476,7 @@ function renderHome() {
         <li><b>Parli ad alta voce e scrivi frasi tue</b>: si ricorda ciò che si produce e ciò che riguarda noi (<i>effetto produzione</i> e <i>autoriferimento</i>).</li>
         <li><b>Dormi</b>: il sonno consolida ciò che hai imparato. Meglio poco ogni giorno che tanto una volta.</li>
       </ul>
-      <p class="muted">Approfondimento con le fonti scientifiche: <code>docs/neuroscienze-apprendimento.md</code></p>
+      <p class="muted">Approfondimento con le fonti scientifiche: <a href="docs/neuroscienze-apprendimento.html">Cosa dice la scienza su come si impara</a> · <a href="docs/confronto-piattaforme.html">Confronto tra le piattaforme</a></p>
     </section>`;
 }
 
@@ -612,7 +731,7 @@ function renderPlan() {
   $('#main').innerHTML = `<section class="card"><h3>📅 Quanto ti manca</h3>
     <p>Lezioni rimanenti: <b>${left}</b> su ${course().length}.</p>
     <table class="plan"><tr><th>Ritmo</th><th>Durata</th><th>Fine prevista</th></tr>${rows}</table>
-    <p class="muted">Dopo l'A2 trovi in <code>docs/piano-di-studio.md</code> come proseguire verso il B1.</p></section>
+    <p class="muted">Calendario, tappe e come proseguire verso il B1: <a href="docs/piano-di-studio.html">Piano di studio</a>.</p></section>
     <section class="card"><h3>🧠 La tua memoria</h3>
     <p>Elementi in ripasso: <b>${cards.length}</b> · consolidati (stabili per oltre 3 settimane): <b>${mature}</b></p>
     <p class="muted">Ripassi previsti nei prossimi 7 giorni:</p>
@@ -623,19 +742,29 @@ function renderPlan() {
     <section class="card"><h3>✍️ Il tuo diario</h3>
     ${state.diary.length ? state.diary.map(d => `<div class="phrase"><small class="muted">${fmtDate(d.date)} · ${lessonName(d.lesson)}</small><br>${esc(d.text).replace(/\n/g, '<br>')}</div>`).join('') : '<p class="muted">Le frasi che scrivi alla fine di ogni lezione compariranno qui. Mostrale a un tutor per farle correggere!</p>'}</section>
     <section class="card"><h3>💾 Backup dei progressi</h3>
-    <p class="muted">I progressi sono salvati nel browser di questo dispositivo. Esportali per non perderli o per spostarli su un altro dispositivo.</p>
+    <p class="muted">${{ ok: '☁️ I progressi sono salvati nel tuo account Claude: li ritrovi uguali su telefono e computer.', loading: '☁️ Sincronizzazione con il tuo account…', error: '⚠️ Non riesco a raggiungere il tuo account: i progressi restano su questo dispositivo e verranno sincronizzati appena possibile.', off: 'I progressi sono salvati nel browser di questo dispositivo. Esportali per non perderli o per spostarli su un altro dispositivo.' }[cloud.status]}</p>
     <div class="actions"><button id="exp">⬇ Esporta</button><label class="btn">⬆ Importa<input type="file" id="imp" accept=".json" hidden></label>
-    <button id="reset" class="bad">Azzera tutto</button></div></section>`;
+    <button id="reset" class="bad">Azzera tutto</button></div><p id="bmsg" class="muted center"></p></section>`;
+  const msg = t => { $('#bmsg').textContent = t; };
   $('#exp').onclick = () => {
+    const filename = `spagnolo-progressi-${today()}.json`, data = JSON.stringify(state, null, 1);
+    if (DOWNLOADS) { DOWNLOADS.save({ filename, data }).then(() => msg('File salvato.'), () => msg('Download annullato.')); return; }
     const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([JSON.stringify(state, null, 1)], { type: 'application/json' }));
-    a.download = `spagnolo-progressi-${today()}.json`; a.click();
+    a.href = URL.createObjectURL(new Blob([data], { type: 'application/json' }));
+    a.download = filename; a.click();
   };
   $('#imp').onchange = e => {
     const f = e.target.files[0]; if (!f) return;
-    f.text().then(t => { try { localStorage.setItem(STORE_KEY, JSON.stringify(JSON.parse(t))); state = load(); save(); alert('Progressi importati!'); render('home'); } catch { alert('File non valido.'); } });
+    f.text().then(t => {
+      try { state = migrate(JSON.parse(t)); save(); render('plan'); $('#bmsg').textContent = '✅ Progressi importati!'; }
+      catch { msg('❌ File non valido.'); }
+    });
   };
-  $('#reset').onclick = () => { if (confirm('Vuoi davvero cancellare tutti i progressi?')) { state = defaultState(); save(); render('home'); } };
+  let armed = false;
+  $('#reset').onclick = () => {
+    if (!armed) { armed = true; $('#reset').textContent = 'Sei sicuro? Tocca di nuovo per cancellare tutto'; return; }
+    state = defaultState(); save(); render('home');
+  };
 }
 
 // ---------- Navigazione ----------
@@ -651,5 +780,6 @@ document.addEventListener('click', e => {
   if (e.target.closest('[data-practice]')) renderReview({ practice: true });
 });
 $$('nav button').forEach(b => b.onclick = () => render(b.dataset.view));
-save();
+saveLocal();
 render('home');
+cloudInit();
