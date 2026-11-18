@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>¡Aprende Español! — Corso di spagnolo A1-A2</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🇪🇸</text></svg>">
+<style>
+  :root {
+    --bg: #faf7f2; --card: #fff; --ink: #222; --muted: #6b6b6b; --line: #e8e2d8;
+    --red: #c60b1e; --yellow: #ffc400; --green: #2e8b57; --amber: #d89b00; --blue: #2f6db5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #17161a; --card: #222127; --ink: #eee; --muted: #a3a1a8; --line: #36343c; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 17px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--ink); }
+  header { background: linear-gradient(180deg, var(--red) 0 25%, var(--yellow) 25% 75%, var(--red) 75%); padding: 14px 16px; }
+  header h1 { margin: 0 auto; max-width: 760px; font-size: 1.35rem; color: #222; }
+  nav { position: sticky; top: 0; z-index: 5; background: var(--card); border-bottom: 1px solid var(--line); display: flex; justify-content: center; gap: 4px; padding: 6px; }
+  nav button { border: 0; background: none; padding: 8px 12px; border-radius: 8px; font-size: .95rem; }
+  nav button.active { background: var(--yellow); color: #222; font-weight: 600; }
+  main { max-width: 760px; margin: 0 auto; padding: 16px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px; margin-bottom: 16px; }
+  .center { text-align: center; }
+  .muted { color: var(--muted); }
+  h2.level { margin: 26px 0 10px; color: var(--red); }
+  button, .btn { font: inherit; cursor: pointer; border: 1px solid var(--line); background: var(--card); color: var(--ink); padding: 10px 16px; border-radius: 10px; display: inline-block; }
+  button:hover, .btn:hover { filter: brightness(.96); }
+  button:disabled { cursor: default; }
+  button.primary { background: var(--red); border-color: var(--red); color: #fff; font-weight: 600; }
+  button.primary.alt { background: var(--blue); border-color: var(--blue); }
+  button.bad { color: var(--red); }
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; justify-content: center; }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 14px 0; text-align: center; }
+  .stats b { display: block; font-size: 1.4rem; }
+  .stats span { font-size: .8rem; color: var(--muted); }
+  @media (max-width: 520px) { header small { display: none; } .stats { grid-template-columns: repeat(2, 1fr); } nav button { padding: 8px 7px; font-size: .85rem; } }
+  .bar { height: 10px; background: var(--line); border-radius: 99px; overflow: hidden; }
+  .bar.small { height: 6px; }
+  .bar div { height: 100%; background: linear-gradient(90deg, var(--red), var(--yellow)); transition: width .3s; }
+  .rhythms { display: flex; flex-wrap: wrap; gap: 8px; }
+  .rhythms .sel { background: var(--yellow); color: #222; border-color: var(--amber); font-weight: 600; }
+  .lesson-row { display: flex; gap: 12px; align-items: center; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px; margin-bottom: 8px; cursor: pointer; }
+  .lesson-row:hover { border-color: var(--yellow); }
+  .lesson-row.locked { opacity: .5; cursor: default; }
+  .lesson-row .num { min-width: 34px; height: 34px; border-radius: 50%; background: var(--bg); display: grid; place-items: center; font-weight: 700; }
+  .lesson-row .score { margin-left: auto; font-weight: 600; color: var(--green); }
+  .toggle { display: flex; gap: 8px; align-items: center; }
+  .stepper { display: flex; gap: 4px; margin: 10px 0 16px; flex-wrap: wrap; }
+  .stepper span { flex: 1; text-align: center; font-size: .78rem; padding: 6px 2px; border-radius: 6px; background: var(--line); color: var(--muted); min-width: 70px; }
+  .stepper .cur { background: var(--yellow); color: #222; font-weight: 700; }
+  .stepper .past { background: #c8e6c9; color: #1b5e20; }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0; }
+  td, th { border-bottom: 1px solid var(--line); padding: 7px 8px; text-align: left; vertical-align: top; }
+  th { background: var(--bg); font-size: .9rem; }
+  .spk { border: 0; background: none; padding: 0 4px; font-size: 1rem; }
+  .phrase { padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .tip { background: #fff7d6; color: #5a4500; padding: 12px; border-radius: 10px; margin-top: 16px; }
+  .grammar p, .grammar li { margin: .5em 0; }
+  .question { font-size: 1.15rem; }
+  .opts { display: grid; gap: 8px; }
+  .opt { text-align: left; }
+  .opt.right { background: #d8f3dc; border-color: var(--green); color: #1b4332; }
+  .opt.wrong { background: #fde2e4; border-color: var(--red); color: #7a0b16; }
+  input#ans, input#rans { width: 100%; font: inherit; font-size: 1.1rem; padding: 12px; border: 2px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--ink); }
+  input:focus { outline: none; border-color: var(--yellow); }
+  .accents { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+  .acc { padding: 6px 10px; min-width: 38px; }
+  #f .primary { width: 100%; margin-top: 6px; }
+  .fb { margin-top: 14px; padding: 12px; border-radius: 10px; }
+  .fb.ok { background: #d8f3dc; color: #1b4332; }
+  .fb.accent { background: #fff3c4; color: #5a4500; }
+  .fb.wrong { background: #fde2e4; color: #7a0b16; }
+  .big { font-size: 1.8rem; font-weight: 700; margin: 10px 0; }
+  .es { color: var(--red); }
+  .mistakes { text-align: left; background: var(--bg); padding: 12px; border-radius: 10px; }
+  .plan tr.sel td { background: #fff7d6; color: #222; font-weight: 600; }
+  .cal { display: flex; gap: 4px; }
+  .week { display: grid; gap: 4px; }
+  .week span, .dot { width: 20px; height: 20px; border-radius: 4px; background: var(--line); display: inline-block; }
+  .week span.l, .dot.l { background: var(--green); }
+  .week span.r, .dot.r { background: #9ccfa9; }
+  .week span.f { opacity: .3; }
+  .dot { width: 12px; height: 12px; vertical-align: middle; }
+  a { color: var(--blue); }
+</style>
+</head>
+<body>
+<header><h1>🇪🇸 ¡Aprende Español! <small style="font-weight:400">— corso A1 → A2 per italiani</small></h1></header>
+<nav>
+  <button data-view="home">🏠 Home</button>
+  <button data-view="lessons">📚 Lezioni</button>
+  <button data-view="review">🔁 Ripasso</button>
+  <button data-view="plan">📅 Piano</button>
+</nav>
+<main id="main"></main>
+<script src="lessons.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
