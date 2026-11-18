@@ -3,15 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
 <title>¡Aprende Español! — Corso di spagnolo A1-A2</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🇪🇸</text></svg>">
 <style>
-  :root {
+  :root { color-scheme: light;
     --bg: #faf7f2; --card: #fff; --ink: #222; --muted: #6b6b6b; --line: #e8e2d8;
     --red: #c60b1e; --yellow: #ffc400; --green: #2e8b57; --amber: #d89b00; --blue: #2f6db5;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root { --bg: #17161a; --card: #222127; --ink: #eee; --muted: #a3a1a8; --line: #36343c; }
   }
   * { box-sizing: border-box; }
   body { margin: 0; font: 17px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--ink); }
@@ -86,7 +84,6 @@
   a { color: var(--blue); }
   .small { font-size: .85rem; }
   tr.work td, .phrase.work { background: #e8f1fb; }
-  @media (prefers-color-scheme: dark) { tr.work td, .phrase.work { background: #1f2c3d; } }
   .lesson-row.pro { border-left: 4px solid var(--blue); }
   .big-btn { font-size: 1.15rem; padding: 14px 28px; }
   .actions.left { justify-content: flex-start; margin: 0 0 10px; }
