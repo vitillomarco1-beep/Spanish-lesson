@@ -1,6 +1,6 @@
 # 🇪🇸 ¡Aprende Español! — corso di spagnolo per italiani
 
-Un corso completo **dal livello zero all'A2**, pensato per chi parla italiano e lavora nella **consulenza ambientale / carbon farming**, che funziona **offline** nel browser, senza account né installazioni.
+Un corso completo **dal livello zero all'A2**, pensato per chi parla italiano e lavora nella **consulenza ambientale / carbon farming** e nella **gestione di aziende zootecniche da latte**, che funziona **offline** nel browser, senza account né installazioni.
 
 ## Come si usa
 
@@ -20,7 +20,7 @@ I progressi restano salvati nel browser. Puoi esportarli o importarli dalla sezi
 | 🧠 **Metodo basato sulla scienza** | Effetto test, ripetizione dilazionata, pratica intercalata, pre-test, effetto produzione, autoriferimento, consolidamento nel sonno: vedi [`docs/neuroscienze-apprendimento.md`](docs/neuroscienze-apprendimento.md) |
 | 🔊 **Pronuncia** | Sintesi vocale in spagnolo di Spagna, ascolto lento/normale e *shadowing* |
 | 📅 **Piano flessibile** | Obiettivo settimanale, serie di giorni 🔥, data di fine prevista in base al tuo ritmo |
-| 💼 **Spagnolo per il lavoro** | Ogni lezione include parole, frasi ed esercizi di consulenza ambientale e carbon farming, più 8 lezioni professionali (P1-P8): presentarsi, suolo e pratiche agricole, zootecnia ed emissioni, boschi e campionamento, crediti di carbonio e CRCF, email e riunioni, presentare dati, networking. Si può disattivare con "Solo vita quotidiana" |
+| 💼 **Spagnolo per il lavoro** | Ogni lezione include parole, frasi ed esercizi di consulenza ambientale e carbon farming, più 12 lezioni professionali (P1-P12): presentarsi, suolo e pratiche agricole, zootecnia ed emissioni, boschi e campionamento, crediti di carbonio e CRCF, email e riunioni, presentare dati, networking e, per la gestione della stalla da latte e del caseificio, mandria e mungitura robotizzata, riproduzione e vitelli, salute e farmaci, caseificazione del caciocavallo. Si può disattivare con "Solo vita quotidiana" |
 | ⚠️ **Falsi amici** | Gli errori tipici degli italiani (burro, embarazada, salir, éxito…) |
 
 Ogni lezione ha 6 fasi: **Indovina** (pre-test sul vocabolario) → **Grammatica** → **Ascolta e ripeti** → **Esercizi** (mescolati con domande delle lezioni precedenti) → **Frasi tue** (diario) → **Risultato**.
@@ -39,6 +39,6 @@ Una lezione si supera con almeno il 70% di risposte giuste al primo tentativo, e
 index.html       → interfaccia e stile
 app.js           → logica (lezioni, esercizi, ripasso, piano)
 lessons.js       → contenuti del corso generale (facili da modificare o ampliare)
-lessons-work.js  → contenuti 💼 per il lavoro e lezioni professionali P1-P8
+lessons-work.js  → contenuti 💼 per il lavoro e lezioni professionali P1-P12
 docs/            → basi scientifiche, confronto piattaforme e piano di studio
 ```

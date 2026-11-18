@@ -241,7 +241,9 @@ function getLesson(id, full) {
 function course() {
   return LESSONS.flatMap(l => [l, ...(WORK_ON() ? PRO_LESSONS.filter(p => p.after === l.id) : [])]);
 }
-const label = l => l.id > 100 ? 'P' + (l.id - 100) : String(l.id);
+// Le lezioni professionali sono numerate P1, P2… nell'ordine in cui compaiono nel percorso
+const PRO_ORDER = LESSONS.flatMap(l => PRO_LESSONS.filter(p => p.after === l.id)).map(p => p.id);
+const label = l => l.id > 100 ? 'P' + (PRO_ORDER.indexOf(l.id) + 1) : String(l.id);
 const lessonName = id => { const l = getLesson(id); return l ? (l.id > 100 ? 'lezione ' : 'lezione ') + label(l) : 'lezione ' + id; };
 const completedCount = () => course().filter(l => state.lessons[l.id]?.done).length;
 const nextLesson = () => course().find(l => !state.lessons[l.id]?.done);
@@ -338,7 +340,7 @@ function renderHome() {
         <button class="${WORK_ON() ? 'sel' : ''}" data-focus="work">💼 Lavoro + vita quotidiana</button>
         <button class="${WORK_ON() ? '' : 'sel'}" data-focus="life">🌍 Solo vita quotidiana</button>
       </div>
-      <p class="muted">${WORK_ON() ? `Ogni lezione include parole, frasi ed esercizi 💼 di <b>consulenza ambientale e carbon farming</b> (aziende agricole, zootecnia, boschi, crediti di carbonio, clienti, report), e il percorso comprende ${PRO_LESSONS.length} lezioni professionali dedicate (P1-P${PRO_LESSONS.length}).` : 'Solo le lezioni di spagnolo per la vita quotidiana, i viaggi e le relazioni.'}</p>
+      <p class="muted">${WORK_ON() ? `Ogni lezione include parole, frasi ed esercizi 💼 di <b>consulenza ambientale e carbon farming</b> (aziende agricole, zootecnia, boschi, crediti di carbonio, clienti, report) e il percorso comprende ${PRO_LESSONS.length} lezioni professionali (P1-P${PRO_LESSONS.length}), anche sulla <b>stalla da latte e il caseificio</b> (mungitura, fertilità, salute, caciocavallo).` : 'Solo le lezioni di spagnolo per la vita quotidiana, i viaggi e le relazioni.'}</p>
     </section>
     <section class="card">
       <h3>Il tuo ritmo</h3>

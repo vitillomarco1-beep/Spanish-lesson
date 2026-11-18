@@ -553,3 +553,145 @@ const PRO_LESSONS = [
   tip: 'Le relazioni si costruiscono a tavola: impara 3 domande di small talk e 3 risposte su di te. Usale alla prossima occasione.'
 }
 ];
+
+// ---------- Allevamento da latte e caseificio (gestione aziendale tipo Fratelli Marcantonio) ----------
+PRO_LESSONS.push(
+{
+  id: 109, after: 11, level: 'PRO', title: '🐄 La stalla da latte: mandria, mungitura e alimentazione',
+  goal: 'Descrivere una stalla da latte, la mungitura robotizzata e la razione giornaliera.',
+  vocab: [
+    ['el establo / la nave', 'la stalla'], ['el rebaño', 'la mandria'], ['la vaca en lactación', 'la vacca in lattazione'],
+    ['la vaca seca', 'la vacca asciutta'], ['la novilla', 'la manza'], ['el ternero / la ternera', 'il vitello / la vitella'],
+    ['ordeñar / el ordeño', 'mungere / la mungitura'], ['el robot de ordeño', 'il robot di mungitura'],
+    ['la ración', 'la razione'], ['el carro mezclador', 'il carro miscelatore (unifeed)'],
+    ['el ensilado de maíz', 'l\'insilato di mais'], ['el heno', 'il fieno'], ['el comedero', 'la mangiatoia']
+  ],
+  grammar: `
+<p><b>Frequenza e routine in stalla</b></p>
+<ul>
+<li><b>al día / por día</b>: <i>Las vacas se ordeñan tres veces al día.</i></li>
+<li><b>cada</b> (ogni, invariabile): <i>cada mañana, cada dos horas, cada vaca</i></li>
+<li><b>por</b> la mañana / <b>por</b> la tarde: <i>Cargamos el carro por la mañana y por la tarde.</i></li>
+<li><b>kilos por vaca y día</b> (kg/capo/giorno): <i>Comen veinticinco kilos de materia seca por vaca y día.</i></li>
+</ul>
+<p><b>Ordeñar</b> è regolare (-ar): ordeño, ordeñas, ordeña… Con il robot si dice anche <i>las vacas van al robot solas</i>.</p>
+<p>⚠️ <b>La novilla</b> = la manza (giovane femmina non ancora partorita); <b>la vaquilla</b> in alcune zone. <b>El ternero</b> = il vitello (anche "carne de ternera").</p>`,
+  phrases: [
+    ['Tenemos un rebaño de trescientas vacas en lactación.', 'Abbiamo una mandria di trecento vacche in lattazione.'],
+    ['Con el robot, cada vaca se ordeña unas tres veces al día.', 'Con il robot ogni vacca viene munta circa tre volte al giorno.'],
+    ['Cargamos el carro mezclador por la mañana y por la tarde.', 'Carichiamo il carro miscelatore la mattina e la sera.'],
+    ['¿Cuántos litros produce cada vaca al día?', 'Quanti litri produce ogni vacca al giorno?']
+  ],
+  exercises: [
+    {t:'fill', q:'Las vacas se ordeñan tres veces ___ día.', a:['al']},
+    {t:'fill', q:'___ vaca tiene su collar. (ogni)', a:['cada']},
+    {t:'mc', q:'"La manza" →', o:['la novilla','la manceba','la vaca seca','la ternera'], a:0},
+    {t:'mc', q:'"La vacca asciutta" →', o:['la vaca seca','la vaca flaca','la vaca enjuta','la vaca vacía'], a:0},
+    {t:'fill', q:'Nosotros ___ las vacas con dos robots. (ordeñar)', a:['ordeñamos']},
+    {t:'tr', q:'la mungitura', a:['el ordeño','ordeño']}
+  ],
+  tip: 'Domani in stalla nomina mentalmente in spagnolo tutto ciò che vedi: rebaño, comedero, robot, carro mezclador.'
+},
+{
+  id: 110, after: 22, level: 'PRO', title: '🐄 Riproduzione, parti e vitelli',
+  goal: 'Parlare di fertilità, parti, vaccinazioni e gestione dei vitelli.',
+  vocab: [
+    ['el celo', 'il calore'], ['la inseminación artificial', 'l\'inseminazione artificiale'], ['preñada', 'gravida'],
+    ['el diagnóstico de gestación', 'la diagnosi di gravidanza'], ['el parto / parir', 'il parto / partorire'],
+    ['el periodo de secado', 'il periodo di asciutta'], ['el calostro', 'il colostro'], ['el destete', 'lo svezzamento'],
+    ['los días en leche', 'i giorni di lattazione (DIM)'], ['la primípara', 'la primipara'],
+    ['la vacuna / vacunar', 'il vaccino / vaccinare'], ['el crotal', 'la marca auricolare']
+  ],
+  grammar: `
+<p><b>Da quanto tempo?</b> — tre costruzioni utilissime:</p>
+<ul>
+<li><b>hace</b> + tempo = fa: <i>Parió <b>hace</b> tres días.</i> (Ha partorito tre giorni fa.)</li>
+<li><b>desde hace</b> + tempo = da: <i>Está seca <b>desde hace</b> un mes.</i></li>
+<li><b>llevar</b> + tempo: <i><b>Lleva</b> cien días en leche.</i> (È a cento giorni di lattazione.)</li>
+</ul>
+<p><b>Parir</b> (partorire) è regolare: parió, parieron. <b>Dar a luz</b> si usa per le persone.</p>
+<p>⚠️ <b>Preñada</b> per gli animali; per le donne <b>embarazada</b>. <b>El crotal</b> = la marca auricolare (la "matricola" sull'orecchio).</p>`,
+  phrases: [
+    ['La vaca novecientos dos parió hace tres días.', 'La vacca novecentodue ha partorito tre giorni fa.'],
+    ['Lleva cien días en leche y todavía no está preñada.', 'È a cento giorni di lattazione e non è ancora gravida.'],
+    ['Los terneros toman calostro en las primeras seis horas.', 'I vitelli assumono il colostro nelle prime sei ore.'],
+    ['Vacunamos a las vacas sesenta días antes del parto.', 'Vacciniamo le vacche sessanta giorni prima del parto.']
+  ],
+  exercises: [
+    {t:'fill', q:'Parió ___ una semana. (fa)', a:['hace']},
+    {t:'fill', q:'Está seca desde ___ un mes.', a:['hace']},
+    {t:'fill', q:'___ doscientos días en leche. (llevar, ella)', a:['lleva']},
+    {t:'mc', q:'Una vacca gravida è…', o:['preñada','embarazada','grávida de leche','cargada'], a:0},
+    {t:'mc', q:'"El celo" è…', o:['il calore','il cielo','lo zelo','il collo'], a:0},
+    {t:'tr', q:'il colostro', a:['el calostro','calostro']}
+  ],
+  tip: 'Prova a leggere in spagnolo la lista dei parti previsti della settimana: numero, data, giorni.'
+},
+{
+  id: 111, after: 27, level: 'PRO', title: '🧀 Il caseificio: dal latte al caciocavallo',
+  goal: 'Spiegare il processo di caseificazione, la qualità del latte e la tracciabilità dei lotti.',
+  vocab: [
+    ['la quesería', 'il caseificio'], ['el cuajo', 'il caglio'], ['la cuajada', 'la cagliata'], ['el suero', 'il siero'],
+    ['la pasta hilada', 'la pasta filata'], ['la salmuera', 'la salamoia'], ['la maduración', 'la stagionatura'],
+    ['la pieza (de queso)', 'la forma (di formaggio)'], ['el rendimiento', 'la resa'], ['el lote', 'il lotto'],
+    ['la trazabilidad', 'la tracciabilità'], ['las células somáticas', 'le cellule somatiche'], ['el albarán', 'il documento di trasporto (DDT)']
+  ],
+  grammar: `
+<p><b>Descrivere un processo</b>: "se" passivo + connettivi di sequenza.</p>
+<p><i><b>Primero</b> se calienta la leche. <b>Después</b> se añade el cuajo. <b>Cuando</b> se forma la cuajada, se corta y se deja madurar. <b>Luego</b> se hila la pasta en agua caliente, se da forma a las piezas y <b>por último</b> se meten en salmuera.</i></p>
+<p>Per spiegarlo a un collaboratore usa l'<b>imperativo</b> (lezione 27): <i>Calienta la leche, añade el cuajo, espera cuarenta minutos.</i></p>
+<p><b>Qualità del latte</b>: <i>la grasa, la proteína, la lactosa, el recuento de células somáticas, el recuento bacteriano, los inhibidores</i> (residui di antibiotici).</p>
+<p>⚠️ <b>Los inhibidores</b> = gli inibenti. <b>La forma</b> del formaggio è <b>la pieza</b>; <b>el molde</b> è lo stampo.</p>`,
+  phrases: [
+    ['Primero se calienta la leche y después se añade el cuajo.', 'Prima si scalda il latte e poi si aggiunge il caglio.'],
+    ['El caciocavallo es un queso de pasta hilada.', 'Il caciocavallo è un formaggio a pasta filata.'],
+    ['Con cien litros de leche sacamos unos diez kilos de queso.', 'Con cento litri di latte otteniamo circa dieci chili di formaggio.'],
+    ['Cada lote tiene su código para la trazabilidad.', 'Ogni lotto ha il suo codice per la tracciabilità.']
+  ],
+  exercises: [
+    {t:'fill', q:'Primero se ___ la leche. (calentar, passivo con se)', a:['calienta']},
+    {t:'fill', q:'Después se añade el ___. (il caglio)', a:['cuajo']},
+    {t:'mc', q:'"Il siero" →', o:['el suero','el siero','la serie','el sudor'], a:0},
+    {t:'mc', q:'"La resa" (kg di formaggio per 100 l) →', o:['el rendimiento','la rendición','la resa','el retorno'], a:0},
+    {t:'fill', q:'___ la leche y añade el cuajo. (calentar, tú — imperativo)', a:['calienta']},
+    {t:'tr', q:'la tracciabilità', a:['la trazabilidad','trazabilidad']}
+  ],
+  tip: 'Racconta in spagnolo, a voce, come si fa il caciocavallo: è la storia perfetta da raccontare a un cliente o a una fiera.'
+},
+{
+  id: 112, after: 29, level: 'PRO', title: '🐄 Salute della mandria e farmaci',
+  goal: 'Descrivere le principali patologie, i trattamenti e i tempi di sospensione.',
+  vocab: [
+    ['la mastitis', 'la mastite'], ['la cojera', 'la zoppia'], ['la cetosis', 'la chetosi'],
+    ['la hipocalcemia / fiebre de leche', 'l\'ipocalcemia / febbre da latte'], ['el desplazamiento de abomaso', 'la dislocazione dell\'abomaso'],
+    ['la retención de placenta', 'la ritenzione di placenta'], ['la metritis', 'la metrite'], ['el tratamiento', 'il trattamento'],
+    ['el antibiótico', 'l\'antibiotico'], ['el tiempo de espera', 'il tempo di sospensione'], ['la leche descartada', 'il latte scartato / separato'],
+    ['el cuarto', 'il quarto (della mammella)'], ['cojear', 'zoppicare']
+  ],
+  grammar: `
+<p><b>Descrivere un caso clinico</b></p>
+<ul>
+<li>Sintomo in corso — <b>estar + gerundio</b>: <i>La vaca está cojeando.</i></li>
+<li>Diagnosi — <b>tener</b>: <i>Tiene mastitis en el cuarto delantero derecho.</i></li>
+<li>Obbligo — <b>hay que / tener que</b>: <i>Hay que descartar la leche cuatro días.</i></li>
+<li>Durata — <b>durante</b>: <i>Tratamiento con antibiótico durante tres días.</i></li>
+</ul>
+<p>I quarti: <i>delantero / trasero</i> (anteriore / posteriore), <i>derecho / izquierdo</i>.</p>
+<p>⚠️ <b>Tiempo de espera</b> = tempo di sospensione (latte o carne non commercializzabili). <b>Descartar</b> = scartare.</p>`,
+  phrases: [
+    ['La vaca está cojeando de la pata trasera izquierda.', 'La vacca zoppica dalla zampa posteriore sinistra.'],
+    ['Tiene mastitis en el cuarto delantero derecho.', 'Ha la mastite al quarto anteriore destro.'],
+    ['Hay que descartar la leche durante el tiempo de espera.', 'Bisogna scartare il latte durante il tempo di sospensione.'],
+    ['¿Cuánto nos cuesta cada caso de mastitis?', 'Quanto ci costa ogni caso di mastite?']
+  ],
+  exercises: [
+    {t:'fill', q:'La vaca está ___. (zoppicare, gerundio)', a:['cojeando']},
+    {t:'fill', q:'Hay ___ descartar la leche.', a:['que']},
+    {t:'mc', q:'"Il tempo di sospensione" →', o:['el tiempo de espera','el tiempo de suspensión','la pausa','el periodo seco'], a:0},
+    {t:'mc', q:'"La zoppia" →', o:['la cojera','la zopia','la cojinera','la cola'], a:0},
+    {t:'fill', q:'el cuarto delantero ___ (destro)', a:['derecho']},
+    {t:'tr', q:'la mastite', a:['la mastitis','mastitis']}
+  ],
+  tip: 'Per un mese, quando registri un caso nella app di stalla, ripeti la diagnosi ad alta voce in spagnolo.'
+}
+);

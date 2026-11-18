@@ -1,29 +1,33 @@
 # Piano di studio — dall'A1 all'A2 (e oltre)
 
-Il corso ha **31 lezioni generali** (19 di livello A1 + 12 di livello A2) e, con l'obiettivo **💼 Lavoro + vita quotidiana** (predefinito), **8 lezioni professionali** (P1-P8) inserite nel percorso al momento giusto: in totale **39 lezioni** da 20-30 minuti.
+Il corso ha **31 lezioni generali** (19 di livello A1 + 12 di livello A2) e, con l'obiettivo **💼 Lavoro + vita quotidiana** (predefinito), **12 lezioni professionali** (P1-P12) inserite nel percorso al momento giusto: in totale **43 lezioni** da 20-30 minuti.
 Puoi scegliere il ritmo nell'app e cambiarlo quando vuoi: puoi **sempre** fare più lezioni di quelle previste.
 
 ## Durata in base al ritmo
 
-| Ritmo | Lavoro + vita (39 lezioni) | Solo vita (31 lezioni) |
+| Ritmo | Lavoro + vita (43 lezioni) | Solo vita (31 lezioni) |
 |---|---|---|
-| 2 lezioni a settimana (minimo) | ~20 settimane (5 mesi) | ~16 settimane |
-| 3 lezioni a settimana | ~13 settimane | ~11 settimane |
-| 5 lezioni a settimana | ~8 settimane | ~7 settimane |
-| Ogni giorno | ~6 settimane | ~5 settimane |
+| 2 lezioni a settimana (minimo) | ~22 settimane (5 mesi) | ~16 settimane |
+| 3 lezioni a settimana | ~15 settimane | ~11 settimane |
+| 5 lezioni a settimana | ~9 settimane | ~7 settimane |
+| Ogni giorno | ~7 settimane | ~5 settimane |
 
 ### Dove si inseriscono le lezioni professionali
 
 | Dopo la lezione | Lezione professionale | Perché lì |
 |---|---|---|
 | 9 (presente regolare) | P1 · Presentarsi nel lavoro | Sai già dire chi sei e cosa fai |
-| 12 (hay, città) | P2 · Suolo e pratiche agricole | Descrivere luoghi e procedure ("se mide…") |
-| 15 (irregolari) | P3 · Zootecnia ed emissioni | Reducir, hacer, numeri grandi |
-| 18 (tempo, gerundio) | P4 · Boschi e campionamento | Misure, medir, acabar de |
-| 21 (indefinido) | P5 · Crediti di carbonio e certificazione | Spiegare concetti e progetti passati |
-| 23 (imperfecto) | P6 · Email, telefonate e riunioni | Formule scritte e orali |
-| 26 (comparativi) | P7 · Presentare dati e risultati | Tendenze, confronti, percentuali |
-| 28 (viaggi) | P8 · Networking e vita sociale di lavoro | Fiere, cene, inviti |
+| 11 (routine) | P2 · 🐄 La stalla da latte: mandria, mungitura, alimentazione | Routine e frequenze ("tres veces al día") |
+| 12 (hay, città) | P3 · Suolo e pratiche agricole | Descrivere luoghi e procedure ("se mide…") |
+| 15 (irregolari) | P4 · Zootecnia ed emissioni | Reducir, hacer, numeri grandi |
+| 18 (tempo, gerundio) | P5 · Boschi e campionamento | Misure, medir, acabar de |
+| 21 (indefinido) | P6 · Crediti di carbonio e certificazione | Spiegare concetti e progetti passati |
+| 22 (indefinido irregolare) | P7 · 🐄 Riproduzione, parti e vitelli | "Parió hace tres días", "lleva cien días en leche" |
+| 23 (imperfecto) | P8 · Email, telefonate e riunioni | Formule scritte e orali |
+| 26 (comparativi) | P9 · Presentare dati e risultati | Tendenze, confronti, percentuali |
+| 27 (imperativo) | P10 · 🧀 Il caseificio: dal latte al caciocavallo | Spiegare un processo e dare istruzioni |
+| 28 (viaggi) | P11 · Networking e vita sociale di lavoro | Fiere, cene, inviti |
+| 29 (salute) | P12 · 🐄 Salute della mandria e farmaci | Sintomi, "hay que", trattamenti |
 
 > Andando veloce, ripeti una lezione se l'hai superata con meno dell'85%: la velocità conta meno della solidità.
 
